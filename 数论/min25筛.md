@@ -24,7 +24,7 @@ min25筛用来求积性函数前缀和 $\sum_{i = 1}^nf(i)$, 时间复杂度约�
 
 首先要线性筛求出 $\sqrt n$以内的质数。
 
-$g(n)$ 难以直接求解，考虑 $dp$。设$g(n, j) = \sum_{i = 1}^n f(i)[i是质数或i的最小质因子 > p_j]$，其中 $p_j$ 表示第 $j$ 个素数，那么我们需要的就是 $g(n, k), k为最小的满足 p_k \ge \sqrt n$, 考虑从 $j - 1$ 到 $j$, 那么最小质因子为 $p_j$ 的合数会被筛掉，那么它们的贡献需要减去。
+$g(n)$ 难以直接求解，考虑 $dp$。设$g(n, j) = \sum_{i = 1}^n f(i)[i \in \mathbb P \or i的最小质因子 > p_j]$，其中 $p_j$ 表示第 $j$ 个素数，那么我们需要的就是 $g(n, k), k为最小的满足 p_k \ge \sqrt n$, 考虑从 $j - 1$ 到 $j$, 那么最小质因子为 $p_j$ 的合数会被筛掉，那么它们的贡献需要减去。
 
 则有状态转移 ：
 $$
@@ -32,7 +32,20 @@ g(n, j) = g(n, j - 1) - f(p_j)\Big(g(\lfloor \frac n{p_j} \rfloor, j - 1) - g(p_
 $$
 系数 $f(p_j)$ 表示由 $f(p)$ 是完全积性函数，所以可以把它分解为$f(n) = f(p)f(\frac np)$。
 
-$g(\lfloor \frac n{p_j} \rfloor， j - 1)$ 表示考虑 $p_j$ 的所有倍数，它们除以 $p_j$ 后，最小质因子 > $p_{j - 1}$ 的合数以及所有质数的贡献，应当减去。但是这些质数中包含了 $\le p_{j - 1}$ 的要加回来，也就是$g(p_{j - 1}, j - 1)$。
+###### 个人证明：
+
+$$
+\begin{flalign}
+g(n, j) = & \ \ g(n, j - 1) - \sum_{i = 1}^n F(i)[i的最小质因子是p_j] & \\
+= & \ \ g(n, j - 1) - \sum_{i = 1}^n F(p_j \cdot \frac i{p_j})[i的最小质因子是p_j] & \\
+= & \ \ g(n, j - 1) - F(p_j)\sum_{i = 1}^n F(\frac i{p_j})[i的最小质因子是p_j] & \\
+= & \ \ g(n, j - 1) - F(p_j)\sum_{i = 1}^{\lfloor \frac n{p_j} \rfloor} F(i)[i的最小质因子 > p_{j - 1}] & \\
+= & \ \ g(n, j - 1) - F(p_j)(\sum_{i = 1}^{\lfloor \frac n{p_j} \rfloor}F(i)[i \in \mathbb P \or i的最小质因子 > p_{j - 1}] - \sum_{i = 1}^{\lfloor \frac n{p_j} \rfloor}F(i)[i \in \mathbb P \and i的最小质因子 \le p_{j - 1}]) \ \ (容斥原理)& \\
+= & \ \ g(n, j - 1) - F(p_j)\Big(g(n, j - 1) - g(p_{j - 1}, j - 1)\Big)
+\end{flalign}
+$$
+
+
 
 
 
@@ -46,6 +59,8 @@ $g(\lfloor \frac n{p_j} \rfloor， j - 1)$ 表示考虑 $p_j$ 的所有倍数，
    1. $ d \in [0, k)$, 那么 $\lfloor \frac nk \rfloor = k + \lfloor \frac dk \rfloor = k$
    2. $d \in [k, 2k]$, 那么 $\lfloor \frac n{k + 1} \rfloor = \lfloor \frac {k^2 + k + d - k}{k + 1} \rfloor = k + \lfloor \frac{d - k}{k + 1} \rfloor = k$
 2. 若 $k < \lfloor \sqrt n \rfloor$, 即 $k \le \sqrt n - 1$, 假设存在$i$, $\lfloor \frac n{i + 1} < k < \lfloor \frac ni \rfloor$, 此时 $k$ 恰好在两个连续的 $\lfloor \frac nx \rfloor$ 之间，即不可被表出。则 $ \frac n{i + 1} < k$, 故$n < k(i + 1)$, 从而$k < \lfloor \frac ni \rfloor < \lfloor \frac {k(i + 1)}i \rfloor = k + \lfloor \frac ki \rfloor$。另一方面，$\frac n{i + 1} < k < \sqrt n$, 所以 $i + 1 > \sqrt n$, 于是 $i > \sqrt n - 1 \ge k$, 因此$\lfloor \frac ki \rfloor = 0$，于是得到 $k < k$，假设不成立，原命题成立。 
+
+
 
 
 
@@ -68,6 +83,23 @@ $$
 最后一项$[e \neq 1]$的意思是，对于 $e = 1$ 的情况，$S$ 没有计算 `1` 的贡献，因为此时 $p_k \times 1$ 是质数，其贡献在之前计算过。
 
 对于 $e > 1$ 的情况， $p_k^1 \times 1$ 是合数，贡献没有计算需要补上。直接暴力递归计算，且不需要记忆化。
+
+###### 个人证明：
+
+$$
+\begin{flalign}
+S(n, j) = & \ \ g(n) - (p_j) + \sum_{i = 1}^n{f(i)[i的最小质因子 > p_j] - \sum_{k = j + 1}^{p_k^2 \le n}f(p_k)} & \\
+= & \ \ g(n) - g(p_j) + \sum_{i = 1}^n{f(i = p_{j+1}^{r_1}p_{j+2}^{r_2}\cdots p_{k}^{r_k})[i的最小质因子 > p_j] - \sum_{k = j + 1}^{p_k^2 \le n}f(p_k)} & \\ 
+= & \ \ g(n) - g(p_j) + \sum_{k = j + 1}^{p_k^2 \le n}\sum_{e = 1}^{p_k^e \le n}\sum_{i = 1}^n{f(p_k^e)\big(1 + f(\frac{i}{p_k^e})[i的最小质因子 > p_j]\big)} - \sum_{k = j + 1}^{p_k^2 \le n}f(p_k) \ \ (需要加上i=p^k时的贡献) & \\
+= & \ \ g(n) - g(p_j) + \sum_{k = j + 1}^{p_k^2 \le n}\sum_{e = 1}^{p_k^e \le n}f(p_k^e)\sum_{i = 1}^n\big(1 + f(\frac{i}{p_k^e})[i的最小质因子 > p_j]\big) - \sum_{k = j + 1}^{p_k^2 \le n}f(p_k) & \\
+= & \ \ g(n) - g(p_j) + \sum_{k = j + 1}^{p_k^2 \le n}\sum_{e = 1}^{p_k^e \le n}f(p_k^e)\sum_{i = 1}^{n / p_k^e}\big(1 + f(i)[i的最小质因子 > p_k]\big) - \sum_{k = j + 1}^{p_k^2 \le n}f(p_k) & \\
+= & \ \ g(n) - g(p_j) + \sum_{k = j + 1}^{p_k^2 \le n}\sum_{e = 1}^{p_k^e \le n}f(p_k^e)\Big(S(\Big \lfloor \frac{n}{p_k^e} \Big \rfloor, k) + 1\Big) - \sum_{k = j + 1}^{p_k^2 \le n}f(p_k) & \\ 
+= & \ \ g(n) - g(p_j) + \sum_{k = j + 1}^{p_k^2 \le n}\sum_{e = 1}^{p_k^e \le n}f(p_k^e)\Big(S(\Big \lfloor \frac{n}{p_k^e} \Big \rfloor, k) + 1 - [e = 1]\Big) & \\ 
+= & \ \ g(n) - g(p_j) + \sum_{k = j + 1}^{p_k^2 \le n}\sum_{e = 1}^{p_k^e \le n}f(p_k^e)\Big(S(\Big \lfloor \frac{n}{p_k^e} \Big \rfloor, k) + [e \neq 1]\Big) & \\
+\end{flalign}
+$$
+
+
 
 
 
