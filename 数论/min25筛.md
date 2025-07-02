@@ -170,7 +170,7 @@ void init(int n) {
 }
 
 i64 S(i64 x, i64 y) {
-    if(p[y] >= x) return 0;
+    if(p[y] > x) return 0;
     i64 res = (g2[get(x)] - g1[get(x)] - g2[get(p[y])] + g1[get(p[y])] + 2 * mod) % mod;
     for(int i = y + 1; i <= cnt && p[i] <= x / p[i]; ++ i) {
         i64 w = p[i];
